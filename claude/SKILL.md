@@ -17,7 +17,7 @@ hooks:
 
 Guard status: !`${CLAUDE_SKILL_DIR}/guard.sh register ${CLAUDE_SESSION_ID} $ARGUMENTS`
 
-If the guard status is not "on", tell the user before continuing.
+If the guard status is not "on", run `${CLAUDE_SKILL_DIR}/guard.sh register ${CLAUDE_SESSION_ID} [init] <task-dir>` with the plain task path. Still not "on": tell the user before continuing.
 
 Call the Skill tool with "longwork", passing `$ARGUMENTS`, and follow it.
 

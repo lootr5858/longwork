@@ -11,9 +11,11 @@ case "$1" in
   register)
     sid=$2; shift 2
     [ "$1" = init ] && { init=1; shift; }
-    [ -n "$sid" ] && [ -n "$1" ] || { echo "longwork guard: not set (need a task dir)"; exit 0; }
-    [ -n "$init" ] && mkdir -p "$1"
-    d=$(cd "$1" 2>/dev/null && pwd) || { echo "longwork guard: not set ($1 not found)"; exit 0; }
+    # Path as typed: drop surrounding quotes/backticks and whitespace.
+    p=$(printf '%s' "$*" | tr -d '`"'"'" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    [ -n "$sid" ] && [ -n "$p" ] || { echo "longwork guard: not set (need a task dir)"; exit 0; }
+    [ -n "$init" ] && mkdir -p "$p"
+    d=$(cd "$p" 2>/dev/null && pwd) || { echo "longwork guard: not set ($p not found)"; exit 0; }
     mkdir -p "$S" && echo "$d" > "$S/$sid" && fp "$d" > "$S/$sid.mark"
     echo "longwork guard: on for $d" ;;
   off)
