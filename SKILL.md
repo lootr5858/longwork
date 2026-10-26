@@ -9,6 +9,8 @@ One task, one folder, many sessions. The files are the memory; chat history is n
 
 Invoke as `longwork init <task-dir>` or `longwork <task-dir>`. The user names the task dir. Read that folder's files and the sources BRIEF lists; reach anything else only when the user names it.
 
+This is the shared workflow. Claude Code and Codex can install a small entry under the same `longwork` name to add the turn-update guard; see [SETUP.md](SETUP.md) for one-time setup. Loading this file alone does not activate a guard. The guard checks record changes, not their accuracy or the work's correctness.
+
 ## Files
 
 | File | Holds | At session start |

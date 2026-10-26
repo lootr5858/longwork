@@ -5,7 +5,7 @@ Live state: [STATE.md](STATE.md). Decisions: [DECISIONS.md](DECISIONS.md).
 
 ## Start or resume
 
-`/longwork-cc <task-dir>` (Claude Code) · `longwork <task-dir>` (other agents)
+Invoke the `longwork` skill with `<task-dir>` using the agent's native skill interface (Claude Code: `/longwork <task-dir>`; Codex: `$longwork <task-dir>` or the skill picker).
 
 ## Objective
 
