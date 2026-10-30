@@ -25,7 +25,7 @@ guard fixes shared. If the source lives elsewhere, change `longwork_source`.
 ### Claude Code
 
 ```bash
-longwork_source=/data/brain/agents/skills/longwork
+longwork_source=/path/to/longwork   # your longwork clone
 longwork_target="$HOME/.claude/skills/longwork"
 mkdir -p "$HOME/.claude/skills"
 mkdir "$longwork_target" && \
@@ -48,7 +48,7 @@ in the installed entry to match. The supplied template targets the standard
 ### Codex
 
 ```bash
-longwork_source=/data/brain/agents/skills/longwork
+longwork_source=/path/to/longwork   # your longwork clone
 longwork_target="$HOME/.agents/skills/longwork"
 mkdir -p "$HOME/.agents/skills"
 mkdir "$longwork_target" && \
@@ -115,8 +115,8 @@ any BRIEF wording change through the existing BRIEF approval procedure.
 Source-level checks (no live agent settings changed):
 
 ```bash
-bash -n /data/brain/agents/skills/longwork/guard.sh
-python3 /data/brain/agents/skills/longwork/tests/test_guard.py
+bash -n /path/to/longwork/guard.sh
+python3 /path/to/longwork/tests/test_guard.py
 ```
 
 These exercise hook payloads and commands in temporary installations; they do
