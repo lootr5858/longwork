@@ -1,8 +1,10 @@
 # Longwork: one-time local setup
 
-Install one entry named `longwork` for each agent. Both entries read the same
-workflow and run the same guard. The `claude/entry.md` and `codex/entry.md` files
-are installation templates, not additional discoverable skills.
+This folder is itself the `longwork` skill for both agents. Its `SKILL.md` is a
+combined entry: Claude-only frontmatter (hooks, manual invocation) plus one
+section per agent. Both sections read [WORKFLOW.md](WORKFLOW.md) and run the same
+guard. [`agents/openai.yaml`](agents/openai.yaml) disables Codex implicit
+invocation, matching Claude's `disable-model-invocation`.
 
 Requirements: a local Unix environment (Linux, macOS, or WSL), Bash, `jq`, and
 standard Unix utilities. Native Windows and cloud orchestration are not covered.
@@ -12,52 +14,39 @@ temporary-file cleanup removes bindings; invoke longwork again to register.
 For a different store, set `LONGWORK_GUARD_DIR` identically for native hooks and
 agent shell tools. A sandbox must permit writing that store.
 
-## Install entries
+## Install
 
-These commands are for **new destination directories**. If `longwork` is already
-installed, move that installation outside the agent's skill discovery folders
-first. Do not install both the generic root skill and an adapter with the same
-name: clients can expose duplicates instead of merging them.
-
-Keep the source folder at this location; the symlinks keep future workflow and
-guard fixes shared. If the source lives elsewhere, change `longwork_source`.
-
-### Claude Code
+Make this folder reachable as `longwork` in each agent's skill directory. If a
+skill directory is already a symlink to this folder's parent (for example
+`~/.claude/skills` and `~/.agents/skills` both pointing at the folder that holds
+`longwork/`), nothing more is needed. Otherwise link the folder itself:
 
 ```bash
 longwork_source=/path/to/longwork   # your longwork clone
-longwork_target="$HOME/.claude/skills/longwork"
-mkdir -p "$HOME/.claude/skills"
-mkdir "$longwork_target" && \
-  ln -s "$longwork_source/claude/entry.md" "$longwork_target/SKILL.md" && \
-  ln -s "$longwork_source/SKILL.md" "$longwork_target/WORKFLOW.md" && \
-  ln -s "$longwork_source/guard.sh" "$longwork_target/guard.sh" && \
-  ln -s "$longwork_source/templates" "$longwork_target/templates" && \
-  ln -s "$longwork_source/SETUP.md" "$longwork_target/SETUP.md"
+mkdir -p "$HOME/.claude/skills" "$HOME/.agents/skills"
+ln -s "$longwork_source" "$HOME/.claude/skills/longwork"
+ln -s "$longwork_source" "$HOME/.agents/skills/longwork"
 ```
+
+If `longwork` is already installed under another layout, move that installation
+outside skill discovery first: clients can expose duplicate names instead of
+merging them. Keep the source folder at its location; the hook commands use
+absolute paths.
+
+### Claude Code
 
 The entry registers skill-scoped `UserPromptSubmit` and `Stop` hooks. It passes
 Claude's `${CLAUDE_SESSION_ID}` to registration. Reload skills or restart if
 needed, then invoke `/longwork [init] "<task-dir>"`. In that session, `/hooks`
 should show the two guard commands. No separate `/longwork-cc` invocation.
 
-If you use a nondefault Claude skills directory, adjust the two hook commands
-in the installed entry to match. The supplied template targets the standard
-`$HOME/.claude/skills/longwork` installation.
+The hook commands target `$HOME/.claude/skills/longwork/guard.sh`. If you use a
+nondefault Claude skills directory, adjust the two commands in `SKILL.md`.
 
 ### Codex
 
-```bash
-longwork_source=/path/to/longwork   # your longwork clone
-longwork_target="$HOME/.agents/skills/longwork"
-mkdir -p "$HOME/.agents/skills"
-mkdir "$longwork_target" && \
-  ln -s "$longwork_source/codex/entry.md" "$longwork_target/SKILL.md" && \
-  ln -s "$longwork_source/SKILL.md" "$longwork_target/WORKFLOW.md" && \
-  ln -s "$longwork_source/guard.sh" "$longwork_target/guard.sh" && \
-  ln -s "$longwork_source/templates" "$longwork_target/templates" && \
-  ln -s "$longwork_source/SETUP.md" "$longwork_target/SETUP.md"
-```
+Codex reads `name` and `description`; its handling of the extra Claude
+frontmatter is not documented, so confirm `longwork` appears in `/skills`.
 
 Merge the two event groups from [`codex/hooks.json`](codex/hooks.json) into
 `${CODEX_HOME:-$HOME/.codex}/hooks.json`, or configure their equivalent in
@@ -71,7 +60,7 @@ restart the client if needed. Changed hook definitions require trust review
 again. Invoke `$longwork [init] "<task-dir>"` or select `longwork` in `/skills`.
 The name is the same as Claude's; the native invocation syntax differs.
 
-The Codex entry uses the native `CODEX_THREAD_ID` supplied to shell tools.
+The entry's Codex section uses the native `CODEX_THREAD_ID` supplied to shell tools.
 Its availability was confirmed in the development session; the end-to-end
 setup check below must verify that native hook `session_id` reaches the same
 registration. If that variable is absent, activation fails visibly rather than
@@ -93,8 +82,8 @@ Use a disposable task folder and a fresh agent session:
    proves that registration and the native hook use the same session identity.
 4. Repeat while deliberately making no repair. Expect one continuation, then
    an `unresolved after continuation` warning, without another guard retry.
-5. Ask the agent to deactivate this session's guard using its entry's `off`
-   command. Confirm a subsequent unchanged turn receives no guard feedback.
+5. Ask the agent to deactivate this session's guard using the `off` command in
+   its `SKILL.md` section. Confirm a subsequent unchanged turn receives no guard feedback.
 6. In a separate session that never invokes longwork, confirm the global Codex
    hooks remain silent. Verify both typed and picker-based invocation if used.
 

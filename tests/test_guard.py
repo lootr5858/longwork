@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import unittest
@@ -199,20 +200,29 @@ class GuardTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("invalid guard state", result.stderr)
 
-    def test_installation_links_and_codex_hook_commands(self):
+    def test_linked_skill_folder_and_hook_commands(self):
         home = self.root / "home with spaces"
-        target = home / ".agents" / "skills" / "longwork"
-        target.mkdir(parents=True)
-        for name, source in {"SKILL.md": "codex/entry.md", "WORKFLOW.md": "SKILL.md",
-                             "guard.sh": "guard.sh", "templates": "templates",
-                             "SETUP.md": "SETUP.md"}.items():
-            (target / name).symlink_to(SOURCE / source)
-            self.assertTrue((target / name).exists())
+        for skills in (home / ".claude" / "skills", home / ".agents" / "skills"):
+            skills.mkdir(parents=True)
+            (skills / "longwork").symlink_to(SOURCE)
+            for name in ("SKILL.md", "WORKFLOW.md", "guard.sh", "templates",
+                         "agents/openai.yaml"):
+                self.assertTrue((skills / "longwork" / name).exists(), name)
         env = dict(self.env, HOME=str(home))
-        self.ok("register", agent="codex", env=env)
-        hooks = json.loads((SOURCE / "codex" / "hooks.json").read_text())["hooks"]
+        frontmatter = (SOURCE / "SKILL.md").read_text().split("---")[1]
+        claude = dict(re.findall(r"^  (\w+):\n(?:.*\n)*?\s+command: '(.+)'$",
+                                 frontmatter, re.M))
+        codex = {event: groups[0]["hooks"][0]["command"] for event, groups in
+                 json.loads((SOURCE / "codex" / "hooks.json").read_text())["hooks"].items()}
+        for agent, commands in (("claude", claude), ("codex", codex)):
+            self.assertEqual(set(commands), {"UserPromptSubmit", "Stop"})
+            self.assertTrue(all(f" {agent}" in c for c in commands.values()))
+            self.check_hook_commands(agent, commands, env)
+
+    def check_hook_commands(self, agent, hooks, env):
+        self.ok("register", agent=agent, env=env)
         for event, decision in (("UserPromptSubmit", False), ("Stop", True)):
-            command = hooks[event][0]["hooks"][0]["command"]
+            command = hooks[event]
             result = subprocess.run(["bash", "-c", command], input=json.dumps({
                 "session_id": "session-1", "turn_id": "native-shaped-turn",
                 "hook_event_name": event, "stop_hook_active": False,
