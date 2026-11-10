@@ -3,7 +3,7 @@ name: longwork
 description: Keep one large task coherent across sessions using BRIEF, STATE, DECISIONS, and LOG, with a session guard. Use to init or resume a long task from its folder.
 disable-model-invocation: true
 argument-hint: "[init] <task-dir>"
-allowed-tools: Bash(bash ${CLAUDE_SKILL_DIR}/guard.sh *)
+allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/guard.sh" *)
 hooks:
   UserPromptSubmit:
     - hooks:
@@ -19,7 +19,7 @@ Task request: $ARGUMENTS
 
 This entry serves Claude Code and Codex. Follow only your agent's section; the other section's variables are not set for you. Then read `WORKFLOW.md` in this skill's directory (the folder holding this SKILL.md) and follow it. Resolve templates from its `templates/`. Do not invoke the `longwork` skill again.
 
-Shared rules: pass the task directory as one safely quoted shell argument; include `init` only for an init request; never paste raw user text into shell code, invent a session ID, or guess a missing task directory. `on` means bound; `pending initialization` means checks begin once all four files exist. A failed command means the guard is unavailable: tell the user before continuing, and do not claim enforcement.
+Shared rules: run each guard command by itself, with nothing chained before or after it; pass the task directory as one safely quoted shell argument; include `init` only for an init request; never paste raw user text into shell code, invent a session ID, or guess a missing task directory. `on` means bound; `pending initialization` means checks begin once all four files exist. A failed command means the guard is unavailable: tell the user before continuing, and do not claim enforcement.
 
 ## Claude Code
 
