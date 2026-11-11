@@ -81,4 +81,4 @@ The prompt carries the objective, boundaries, allowed sources (paths, not pasted
 
 ## Session end
 
-At a checkpoint or phase end, never mid-item, propose a fresh session: make STATE current, then give the resume line `longwork <task-dir>`. STATE is the handoff.
+At a checkpoint or phase end, never mid-item, propose a fresh session: make STATE current, then give the resume line `longwork <task-dir>` for the user to invoke natively. Never start the next session yourself: a slash command passed as session text does not load the skill, its hooks, or a session ID, so the guard cannot register. STATE is the handoff.
